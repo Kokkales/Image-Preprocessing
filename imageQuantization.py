@@ -21,9 +21,9 @@ def quantImg(image, level):
     # Level 1: 64-127
     # Level 2: 128-191
     # Level 3: 192-255
-    step = (Xmax - Xmin) / level - 1
     # print(step)
     # for each element of the array
+    step = (Xmax - Xmin) / level - 1
     for i in range(image.shape[0]):
         for j in range(image.shape[1]):
             currentValue = image[i, j]
@@ -34,7 +34,6 @@ def quantImg(image, level):
                 newImageArray[i, j] = Xmax
             else:
                 newImageArray[i, j] =  Xmin + level_index * step
-                # newImageArray[i, j] = Xmin + currentValue / step
     # if X[i,j]<Xmin -> r1
     # elif Dk<X[i,j<Dk+1
     # else X[i,j]>Xmax# Calculate the transformation function for the current level
@@ -56,11 +55,12 @@ def calculateMSE(image, newImage, level):
 def plotAllImages():
     # Assuming your images are saved in the specified paths
     image_paths = [
-        "../DIP-project-1/DIP-project-1/images-project-1/barbara.bmp",
-        "./results/qBarbara_8.bmp",
-        "./results/qBarbara_12.bmp",
-        "./results/qBarbara_16.bmp",
-        "./results/qBarbara_20.bmp",
+        "./images-project-1/barbara.bmp",
+        "./results_one/qBarbara_8.bmp",
+        "./results_one/qBarbara_12.bmp",
+        "./results_one/qBarbara_16.bmp",
+        "./results_one/qBarbara_20.bmp",
+        "./results_one/qBarbara_40.bmp",
     ]
 
     # Define the number of rows and columns for the grid layout
@@ -83,6 +83,7 @@ def plotAllImages():
         axes[row, col].axis("off")  # Hide axes for cleaner presentation
 
     plt.show()
+    plt.savefig('final_results.png')
 
 def plotTransformations(caseResults):
     # #-----------------------------------------------------PLOT TRANSFORMATION FUNCTIONS
@@ -95,16 +96,19 @@ def plotTransformations(caseResults):
     num_elements_twelve = len(caseResults[1][1])
     num_elements_sixteen = len(caseResults[2][1])
     num_elements_twenty = len(caseResults[3][1])
+    # num_elements_fourty = len(caseResults[4][1])
     y_eight = np.linspace(Xmin, Xmax, num_elements_eight)
     y_twelve = np.linspace(Xmin, Xmax, num_elements_twelve)
     y_sixteen = np.linspace(Xmin, Xmax, num_elements_sixteen)
     y_twenty = np.linspace(Xmin, Xmax, num_elements_twenty)
+    # y_fourty = np.linspace(Xmin, Xmax, num_elements_fourty)
 
     # # Create the plot
     plt.plot(caseResults[0][1], y_eight, label="8 Levels")
     plt.plot(caseResults[1][1], y_twelve, label="12 Levels")
     plt.plot(caseResults[2][1], y_sixteen, label="16 Levels")
     plt.plot(caseResults[3][1], y_twenty, label="20 Levels")
+    # plt.plot(caseResults[4][1], y_twenty, label="40 Levels")
     # Add labels and title
     plt.xlabel("Index")
     plt.ylabel("Value")
@@ -119,7 +123,7 @@ def plotTransformations(caseResults):
 
 # import image
 try:
-    toProcessImage = Image.open("../DIP-project-1/DIP-project-1/images-project-1/barbara.bmp")
+    toProcessImage = Image.open("./images-project-1/barbara.bmp")
 except OSError:
     raise ValueError("There was a problem with the input image.")
 
@@ -130,13 +134,13 @@ if toProcessImage.mode!='L':
 imageArray = np.array(toProcessImage)
 # print(imageArray.shape)
 
-cases=[8,12,16,20]
+cases=[8,12,16,20, 40]
 caseResults=[]
 results=[]
 for i,case in enumerate(cases):
     caseResults.append(quantImg(imageArray, case))
     results.append((Image.fromarray(caseResults[i][0]),caseResults[i][1]))
-    results[i][0].save(f"./results/qBarbara_{case}.bmp")
+    results[i][0].save(f"./results_one/qBarbara_{case}.bmp")
     # print(i,caseResults[i][1])
 plotAllImages()
 plotTransformations(caseResults)

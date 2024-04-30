@@ -1,30 +1,32 @@
 import cv2
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 
-# Διάβασμα της εικόνας
-image = cv2.imread('../DIP-project-1/DIP-project-1/images-project-1/lenna.bmp', cv2.IMREAD_GRAYSCALE)
+# Read the image
+img = cv2.imread("./images-project-1/lenna.bmp")
 
-# Δημιουργία του Γκαουσιανού θορύβου
+# Define the mean and standard deviation of the Gaussian noise
 mean = 0
-variance = 0.01
-sigma = np.sqrt(variance)
-gaussian_noise = np.random.normal(mean, sigma, image.shape)
-gaussian_noise = gaussian_noise.reshape(image.shape).astype(np.uint8)
+std_dev = 0.5
 
-# Προσθήκη θορύβου στην εικόνα
-noisy_image = cv2.add(image, gaussian_noise)
+# Generate Gaussian noise with the specified mean and standard deviation
+noise = np.random.normal(mean, std_dev, img.shape).astype(img.dtype)  # Ensure same data type
 
+# Add the noise to the image
+noisy_img = cv2.add(img, noise)
+
+# Clip the pixel values to be between 0 and 255 (assuming uint8 image)
+noisy_img = np.clip(noisy_img, 0, 255)
 # Εμφάνιση των εικόνων πριν και μετά την προσθήκη θορύβου
 plt.figure(figsize=(10, 5))
 
 plt.subplot(1, 2, 1)
-plt.imshow(image, cmap='gray')
+plt.imshow(img, cmap='gray')
 plt.title('Original Image')
 plt.axis('off')
 
 plt.subplot(1, 2, 2)
-plt.imshow(noisy_image, cmap='gray')
+plt.imshow(noisy_img, cmap='gray')
 plt.title('Noisy Image')
 plt.axis('off')
 
