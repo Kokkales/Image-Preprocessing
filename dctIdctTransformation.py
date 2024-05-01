@@ -3,7 +3,6 @@ import cv2
 import matplotlib.pyplot as plt
 
 def dct(image):
-
     M, N = image.shape
     result = np.zeros((M, N), dtype=np.float32)
     for u in range(M):

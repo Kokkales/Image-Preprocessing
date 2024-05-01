@@ -122,17 +122,18 @@ def plotTransformations(caseResults):
 
 
 # import image
-try:
-    toProcessImage = Image.open("./images-project-1/barbara.bmp")
-except OSError:
-    raise ValueError("There was a problem with the input image.")
+imageArray = cv2.imread('./images-project-1/barbara.bmp', cv2.IMREAD_GRAYSCALE)
+# try:
+#     toProcessImage = Image.open("./images-project-1/barbara.bmp")
+# except OSError:
+#     raise ValueError("There was a problem with the input image.")
 
-# check if image is grayscale, if not then convert it to grayscale
-if toProcessImage.mode!='L':
-    toProcessImage=toProcessImage.convert('L')
+# # check if image is grayscale, if not then convert it to grayscale
+# if toProcessImage.mode!='L':
+#     toProcessImage=toProcessImage.convert('L')
 
-imageArray = np.array(toProcessImage)
-# print(imageArray.shape)
+# imageArray = np.array(toProcessImage)
+# # print(imageArray.shape)
 
 cases=[8,12,16,20, 40]
 caseResults=[]

@@ -13,7 +13,7 @@ dft_shift = np.fft.fftshift(dft)
 magnitude_spectrum = 20 * np.log(cv2.magnitude(dft_shift[:, :, 0], dft_shift[:, :, 1]))
 plt.subplot(131), plt.imshow(image, cmap='gray')
 plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-plt.subplot(132), plt.imshow(magnitude_spectrum, cmap='gray')
+plt.subplot(132), plt.imshow(magnitude_spectrum )#, cmap='gray')
 plt.title('Magnitude Spectrum'), plt.xticks([]), plt.yticks([])
 
 # Compute the phase spectrum
@@ -29,7 +29,7 @@ phase_angle_normalized = (phase_angle + np.pi) / (2 * np.pi)
 # Convert to uint8 for visualization
 phase_image_uint8 = (phase_angle_normalized * 255).astype(np.uint8)
 
-plt.subplot(133), plt.imshow(phase_image_uint8, cmap='gray')
+plt.subplot(133), plt.imshow(phase_image_uint8)#, cmap='gray')
 plt.title('Phase Spectrum'), plt.xticks([]), plt.yticks([])
 plt.savefig("./results_two/spectrum_images.png")
 plt.show()
