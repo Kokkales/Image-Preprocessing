@@ -49,7 +49,7 @@ def idct(coefficients):
     return result
 
 # import image
-image = cv2.imread('./barbara_compressed.bmp', cv2.IMREAD_GRAYSCALE)
+image = cv2.imread('./images-project-1/barbara.bmp', cv2.IMREAD_GRAYSCALE)
 # Calculate dct
 dct_result = dct(image)
 # Calculate idct
