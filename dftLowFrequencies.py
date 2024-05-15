@@ -1,78 +1,59 @@
 import cv2
 import numpy as np
-from matplotlib import pyplot as plt
+import matplotlib.pyplot as plt
 
-# import image
-image = cv2.imread('./images-project-1/barbara.bmp', cv2.IMREAD_GRAYSCALE)
 
-# dft
-dft = cv2.dft(np.float32(image), flags=cv2.DFT_COMPLEX_OUTPUT)
-dft_shift = np.fft.fftshift(dft)
+# B
+def plotMagnitudeAndSpectrum(dftShifted, image):
+    # magnitude and phase spectrum
+    magnitudeSpectrum = 20 * np.log(cv2.magnitude(dftShifted[:, :, 0], dftShifted[:, :, 1]))
+    phaseSpectrum = np.angle(dftShifted)
+    # print(phaseSpectrum.shape)
+    # Split the image into real and imaginary parts
+    realPart = phaseSpectrum[:,:,0]
+    imaginaryPart = phaseSpectrum[:,:,1]
+    # Calculate phase angle
+    phaseAngle = np.arctan2(imaginaryPart, realPart)
+    phaseAngleNormalized = (phaseAngle + np.pi) / (2 * np.pi) # normalize
+    phaseImage = (phaseAngleNormalized * 255).astype(np.uint8)
 
-# magnitude spectrum
-magnitude_spectrum = 20 * np.log(cv2.magnitude(dft_shift[:, :, 0], dft_shift[:, :, 1]))
-plt.subplot(131), plt.imshow(image, cmap='gray')
-plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-plt.subplot(132), plt.imshow(magnitude_spectrum )#, cmap='gray')
-plt.title('Magnitude Spectrum'), plt.xticks([]), plt.yticks([])
+    plt.subplot(131), plt.imshow(image, cmap='gray'), plt.title('Original Image')
+    plt.subplot(132), plt.imshow(magnitudeSpectrum ),plt.title('Magnitude Spectrum') # can plot it also in cmap='gray'
+    plt.subplot(133), plt.imshow(phaseImage),plt.title('Phase Spectrum') # can plot it also in cmap='gray'
+    plt.savefig("./results_two/spectrum_images.png")
+    plt.show()
 
-# Compute the phase spectrum
-phase_spectrum = np.angle(dft_shift)
-# print(phase_spectrum.shape)
-# Split the image into real and imaginary parts
-real_part = phase_spectrum[:,:,0]
-imaginary_part = phase_spectrum[:,:,1]
-# Calculate phase angle
-phase_angle = np.arctan2(imaginary_part, real_part)
-# Normalize phase angle to [0, 1] for visualization
-phase_angle_normalized = (phase_angle + np.pi) / (2 * np.pi)
-# Convert to uint8 for visualization
-phase_image_uint8 = (phase_angle_normalized * 255).astype(np.uint8)
+# Γ
+def lowFreqReconstructor(dft, image):
+    # filter: keep only low-pass frequencies (20% and 40%)
+    filteredDft20 = np.zeros_like(dft)
+    filteredDft20[:int(0.2 * dft.shape[0]), :int(0.2 * dft.shape[1])] = dft[:int(0.2 * dft.shape[0]), :int(0.2 * dft.shape[1])]
 
-plt.subplot(133), plt.imshow(phase_image_uint8)#, cmap='gray')
-plt.title('Phase Spectrum'), plt.xticks([]), plt.yticks([])
-plt.savefig("./results_two/spectrum_images.png")
-plt.show()
+    fileteredDft40 = np.zeros_like(dft)
+    fileteredDft40[:int(0.4 * dft.shape[0]), :int(0.4 * dft.shape[1])] = dft[:int(0.4 * dft.shape[0]), :int(0.4 * dft.shape[1])]
 
-# C
-rows, cols = image.shape
-crow, ccol = rows // 2, cols // 2
+    # idft
+    reconstructedImage20 = cv2.idft(filteredDft20, flags=cv2.DFT_SCALE | cv2.DFT_REAL_OUTPUT)
+    reconstructedImage40 = cv2.idft(fileteredDft40, flags=cv2.DFT_SCALE | cv2.DFT_REAL_OUTPUT)
 
-# create masks
-mask_20 = np.zeros((rows, cols, 2), np.uint8)
-mask_40 = np.zeros((rows, cols, 2), np.uint8)
+    plt.subplot(131), plt.imshow(image, cmap='gray'), plt.title('Original Image')
+    plt.subplot(132), plt.imshow(reconstructedImage20, cmap='gray'), plt.title('Rbuilded (20%)')
+    plt.subplot(133), plt.imshow(reconstructedImage40, cmap='gray'), plt.title('Rebuilded (40%)')
+    plt.savefig('./results_two/rebuilded_images.png')
+    plt.show()
+    calculateMSE(image, reconstructedImage20, 20)
+    calculateMSE(image, reconstructedImage40, 40)
 
-mask_20[crow - int(0.2 * crow):crow + int(0.2 * crow), ccol - int(0.2 * ccol):ccol + int(0.2 * ccol)] = 1
-mask_40[crow - int(0.4 * crow):crow + int(0.4 * crow), ccol - int(0.4 * ccol):ccol + int(0.4 * ccol)] = 1
+# Δ
+def calculateMSE(image, newImage, level):
+    MSE = np.mean((image.astype(np.float32) - newImage.astype(np.float32)) ** 2)
+    print(f"MSE of {level}: {MSE}")
 
-# apply filter
-fshift_20 = dft_shift * mask_20
-fshift_40 = dft_shift * mask_40
-
-# Inverse dft
-f_ishift_20 = np.fft.ifftshift(fshift_20)
-f_ishift_40 = np.fft.ifftshift(fshift_40)
-
-img_back_20 = cv2.idft(f_ishift_20)
-img_back_40 = cv2.idft(f_ishift_40)
-
-img_back_20 = cv2.magnitude(img_back_20[:, :, 0], img_back_20[:, :, 1])
-img_back_40 = cv2.magnitude(img_back_40[:, :, 0], img_back_40[:, :, 1])
-
-# Plot rebuild images
-plt.subplot(131), plt.imshow(image, cmap='gray')
-plt.title('Original Image'), plt.xticks([]), plt.yticks([])
-plt.subplot(132), plt.imshow(img_back_20, cmap='gray')
-plt.title('Rebuild with 20% '), plt.xticks([]), plt.yticks([])
-plt.subplot(133), plt.imshow(img_back_40, cmap='gray')
-plt.title('Rebuild with 40% '), plt.xticks([]), plt.yticks([])
-plt.savefig("./results_two/rebuilded_images.png")
-plt.show()
-
-# D MSE error
-# Calculate MSE between original and reconstructed images
-mse_20 = np.mean((image.astype(float) - img_back_20.astype(float)) ** 2)
-mse_40 = np.mean((image.astype(float) - img_back_40.astype(float)) ** 2)
-
-print("MSE for 20% coefficients retained:", mse_20)
-print("MSE for 40% coefficients retained:", mse_40)
+if __name__=='__main__':
+    # import image
+    image = cv2.imread('images-project-1/barbara.bmp', cv2.IMREAD_GRAYSCALE)
+    # A - dft
+    dft = cv2.dft(np.float32(image), flags=cv2.DFT_COMPLEX_OUTPUT)
+    dftShift = np.fft.fftshift(dft) # center pectrum
+    plotMagnitudeAndSpectrum(dftShift, image)
+    lowFreqReconstructor(dft, image)
